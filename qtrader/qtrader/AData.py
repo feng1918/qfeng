@@ -6,7 +6,8 @@ class SHSZData(object):
     """docstring for SHSZData"""
     def __init__(self, data_folder):
         super(SHSZData, self).__init__()
-        self.stocks = ts.get_stock_basics()
+        stocks = ts.get_stock_basics()
+        self.stocks = stocks[stocks['timeToMarket'] != 0]
         self.DATA_FOLDER = data_folder
 
     def download_d_all(self):
@@ -21,6 +22,15 @@ class SHSZData(object):
         print(f"Downloading {code}...")
         df = ts.get_k_data(code, start=start, end=end)
         df.to_csv(f"{self.DATA_FOLDER}/{code}.csv", index=False)
+
+    def retry_d(self):
+        from pathlib import Path
+        for code, row in self.stocks.iterrows():
+            csv_f = Path(f"{self.DATA_FOLDER}/{code}.csv")
+            if not csv_f.exists():
+                time_to_market = str(row['timeToMarket'])
+                start = "{}-{}-{}".format(time_to_market[:4], time_to_market[4:6], time_to_market[6:8])
+                self.download_d(code, start=start)
 
     def update_d_all(self):
         """docstring for update_d_all"""
@@ -47,3 +57,23 @@ class SHSZData(object):
     def get_basic(self, code):
         """docstring for get_name"""
         return self.stocks.loc[code]
+
+
+class SHSZSelection(object):
+    """docstring for SHSZSelection"""
+    def __init__(self, data_folder, selection_func, equities=None):
+        super(SHSZSelection, self).__init__()
+        self.selection_func = selection_func
+        self.DATA_FOLDER = data_folder
+        stocks = ts.get_stock_basics()
+        stocks = stocks[stocks['timeToMarket'] != 0]
+        self.equities = equities if equities else stocks.index.values
+    
+    def run(self):
+        results = None
+        for e in self.equities:
+            df = pd.read_csv(f'{self.DATA_FOLDER}/{e}.csv', delimiter=',', header=0)
+            df = df.sort_values(by='date')
+            rs = self.selection_func(e, df)
+            results = pd.concat([results, rs])
+        return results
