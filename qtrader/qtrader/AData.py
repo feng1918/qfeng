@@ -44,7 +44,8 @@ class SHSZData(object):
         str_latest_date = old_df.iloc[-1]['date']
         start = pd.to_datetime(str_latest_date, format='%Y-%m-%d') + pd.DateOffset(1)
         new_df = ts.get_k_data(code, start.strftime('%Y-%m-%d'))
-        new_df = new_df.sort_values(by='date')
+        if not new_df.empty:
+            new_df = new_df.sort_values(by='date')
         df = old_df.append(new_df, ignore_index=True)
         df.to_csv(f"{self.DATA_FOLDER}/{code}.csv", index=False)
 
