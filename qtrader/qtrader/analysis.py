@@ -46,7 +46,7 @@ def gen_jump_powers(quotes, charts=True):
     return dump_power
 
 
-def gen_smoothed_close(serie, win_len=20, charts=True):
+def gen_smoothed(serie, win_len=20, charts=True):
     """
     Generate smoothed value for a serie
     """
@@ -58,7 +58,7 @@ def gen_smoothed_close(serie, win_len=20, charts=True):
         plt.figure(figsize=(18, 7))
         plt.plot(smoothed_cls, label='smoothed close', c='r')
         plt.plot(serie, label='close', c='b')
-        plt.grid()
+        plt.grid(True)
         plt.legend(loc='best')
 
     return smoothed_cls
@@ -122,9 +122,9 @@ def gen_cluster_1d(data_list, number_class):
     return kclass
 
 
-def gen_stational_points(origin, num_class=1, delta=0.003, charts=True):
+def gen_stational_points(origin, num_class=3, delta=0.003, charts=True):
     df = pd.DataFrame(origin.values, columns=['origin'])
-    df['smoothed'] = gen_smoothed_close(df['origin'], charts=False)
+    df['smoothed'] = gen_smoothed(df['origin'], charts=False)
     df['pre'] = df.smoothed.shift(1)
     df['aft'] = df.smoothed.shift(-1)
     df['der1'] = (df['aft'] - df['pre']) / df['smoothed']
@@ -142,7 +142,7 @@ def gen_stational_points(origin, num_class=1, delta=0.003, charts=True):
             plt.axhline(i, c='r', label=f'support {i}')
         for i in resistance:
             plt.axhline(i, c='y', label=f'resistance {i}')
-        plt.grid()
+        plt.grid(True)
         plt.legend(loc='best')
     return (support, resistance)
 
@@ -158,7 +158,7 @@ def gen_supres(serie, win_len=11, delta=1.1, charts=True):
     if win_len % 2 != 0:
         win_len += 1
 
-    ltp_s = gen_smoothed_close(ltp, win_len, charts=False)
+    ltp_s = gen_smoothed(ltp, win_len, charts=False)
     n_ltp = ltp.shape[0]
     # taking a simple derivative
     ltp_d = np.zeros(n_ltp)
@@ -208,7 +208,7 @@ def gen_supres(serie, win_len=11, delta=1.1, charts=True):
             plt.axhline(i, c='r', label=f'support {i}')
         for i in resistance:
             plt.axhline(i, c='g', label=f'resistance {i}')
-        plt.grid()
+        plt.grid(True)
         plt.legend(loc='best')
 
     return support, resistance
@@ -280,7 +280,8 @@ def gen_trends(x, window=1/3.0, charts=True):
         plt.scatter(min1, x[min1],  marker='x', c='r')
         plt.scatter(min2, x[min2],  marker='x', c='black')
         plt.axvline(window, linestyle='--')
-        plt.grid()
+        plt.grid(True)
+        plt.show()
 
     return max_slope, min_slope
 
